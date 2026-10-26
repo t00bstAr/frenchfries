@@ -52,7 +52,13 @@ body {
   font-size: 15px;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
+  /* app feel: no text selection or long-press menus, except where you type */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
+input, textarea { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+img, svg { -webkit-user-drag: none; }
 #app {
   height: 100%;
   display: flex;
