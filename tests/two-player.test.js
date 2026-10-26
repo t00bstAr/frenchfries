@@ -39,9 +39,9 @@ const prof = n => JSON.stringify({ mode: 'online', tricks: 2, bestOf: 1, stake: 
   console.log('host code', code);
 
   const B = await open('Mads');
-  await B.waitForSelector('[data-join]', { timeout: 8000 });
-  console.log('B sees open game:', await B.textContent('.game-row b'), '| B status:', await B.textContent('#online-note'));
-  await B.click('[data-join]');
+  await B.waitForSelector(`[data-join="${code}"]`, { timeout: 8000 });
+  console.log('B sees open game:', await B.textContent(`[data-join="${code}"] b`), '| B status:', await B.textContent('#online-note'));
+  await B.click(`[data-join="${code}"]`);
   await A.waitForFunction(() => document.querySelectorAll('#lobby-seats .seat-row').length === 2, null, { timeout: 8000 });
   await B.waitForFunction(() => document.querySelectorAll('#lobby-seats .seat-row').length === 2, null, { timeout: 8000 });
   console.log('A lobby:', (await A.$$eval('#lobby-seats .seat-row .n', e => e.map(x => x.textContent))).join(', '));
