@@ -728,14 +728,16 @@ body:has(#result.mood-lost:not([hidden])) #fx { filter: grayscale(1) brightness(
 .res-av.grey .av { filter: grayscale(1); border-color: #b7bcc7; transform: rotate(-4deg); }
 .res-av.small .av { --s: 80px; }
 .lost-t { color: var(--carton); }
-.res-card.win { box-shadow: 0 7px 0 var(--sky-ink), 0 0 0 6px var(--fry); }
+.res-card.win { box-shadow: 0 0 0 6px var(--fry), 0 7px 0 6px var(--fry-shade); } /* gold frame with its own 3D lip, like the buttons */
 .res-card.win .res-eyebrow { color: var(--sky-deep); }
 .res-av.shine::before {
-  content: ""; position: absolute; left: 50%; top: 50%; width: 230px; height: 230px; margin: -115px 0 0 -115px;
-  border-radius: 50%; background: repeating-conic-gradient(var(--fry-light) 0 12deg, transparent 12deg 24deg);
-  -webkit-mask: radial-gradient(closest-side, #000 55%, transparent); mask: radial-gradient(closest-side, #000 55%, transparent);
-  opacity: .85; animation: spin 14s linear infinite;
+  content: ""; position: absolute; left: 50%; top: 50%; width: 210px; height: 210px; margin: -105px 0 0 -105px;
+  border-radius: 50%; background: repeating-conic-gradient(var(--fry) 0 10deg, transparent 10deg 20deg);
+  -webkit-mask: radial-gradient(closest-side, #000 45%, transparent); mask: radial-gradient(closest-side, #000 45%, transparent);
+  animation: spin 14s linear infinite;
 }
+.res-av.shine .av { box-shadow: 0 0 0 4px #fff; } /* a white gap so the gold ring doesn't melt into the rays */
+.res-card.win .res-eyebrow, .res-card.win .res-big { position: relative; z-index: 1; }
 .res-av.shine.small::before { width: 170px; height: 170px; margin: -85px 0 0 -85px; }
 @keyframes spin { to { transform: rotate(1turn); } }
 .res-av .tag.safe { background: var(--fry); color: var(--ink); box-shadow: 0 3px 0 var(--fry-shade); }
