@@ -2,11 +2,12 @@
   "name": "frenchfries-game",
   "private": true,
   "scripts": {
-    "test": "node tests/two-player.test.js",
+    "test": "node tests/two-player.test.js && node tests/qr-join.test.js",
     "test:real": "REAL=1 node tests/two-player.test.js"
   },
   "devDependencies": {
     "matter-js": "^0.19.0",
-    "playwright": "^1.64.1"
+    "playwright": "^1.64.1",
+    "qrcode-generator": "^1.4.4"
   }
 }

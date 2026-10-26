@@ -197,6 +197,18 @@ button.step:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--carto
 }
 #setup.typing { padding-bottom: 60vh; }
 .setup-head { width: 100%; max-width: 440px; display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; flex: none; }
+/* the title bar stays put while the screen scrolls; the sky colour runs edge to edge behind it */
+#profile .setup-head, #setup .setup-head, #lobby .setup-head {
+  position: sticky; top: -4px; z-index: 3;
+  margin-top: -4px; padding-top: 4px; /* cover the screen's 4px top padding too */
+  background: var(--sky);
+  box-shadow: 0 0 0 100vmax var(--sky);
+  clip-path: inset(0 -100vmax);
+}
+/* wider screens: the card sits in the middle of the space under the title bar */
+@media (min-width: 600px) {
+  #profile > .panel, #setup > .panel, #lobby > .panel { margin-block: auto; }
+}
 .setup-head .back { width: 40px; height: 40px; padding: 0; display: grid; place-items: center; }
 .back svg { width: 22px; height: 22px; display: block; }
 .back.with-chev { display: inline-flex; align-items: center; gap: 2px; padding: 8px 14px 8px 8px; }
@@ -411,6 +423,11 @@ button.step:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--carto
 
 /* lobby */
 .code-box { text-align: center; }
+.qr { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 14px; }
+.qr[hidden] { display: none; }
+.qr-img { width: 168px; height: 168px; padding: 8px; background: #fff; border-radius: 14px; border: 2px solid var(--line); box-sizing: border-box; }
+.qr-img svg { display: block; width: 100%; height: 100%; }
+.qr small { font-size: 12.5px; font-weight: 700; color: var(--muted); }
 .code {
   font-family: var(--display);
   font-size: 54px;
@@ -1044,6 +1061,10 @@ window.createFfgRoom = function () {
         <span class="field-label">Game code</span>
         <div class="code" id="lobby-code">····</div>
         <p class="hint" id="lobby-hint"></p>
+        <div class="qr" id="lobby-qr" hidden>
+          <div class="qr-img" id="lobby-qr-img" role="img" aria-label="QR code to join this game"></div>
+          <small>Scan to join</small>
+        </div>
       </div>
       <div>
         <span class="field-label" id="lobby-count">Players</span>
@@ -1085,6 +1106,7 @@ window.createFfgRoom = function () {
 <input type="file" id="cam" accept="image/*" capture="user" hidden>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (() => {
   const $ = s => document.querySelector(s);
@@ -1195,6 +1217,25 @@ window.createFfgRoom = function () {
     current = id;
     $('#fx').classList.toggle('behind', id === 'intro');
     SCREENS.forEach(s => { $('#' + s).hidden = s !== id; });
+    syncUrl(id);
+  }
+
+  // ================= routes =================
+  // /  /profile  /new  /play (game on this phone)  /game/1234 (online lobby and game)
+  // /join/1234 is the QR link: it joins that game and then becomes /game/1234.
+  const BASE = location.pathname.replace(/(?:profile|new|play|(?:join|game)\/\d{4})\/?$|index\.html$/, '').replace(/\/?$/, '/');
+  let routing = false; // following the browser's back/forward or the first load: rewrite the URL instead of adding to history
+  const routeNow = () => location.pathname.slice(BASE.length).replace(/\/$/, '');
+  function pathFor(id) {
+    if (id === 'profile') return 'profile';
+    if (id === 'setup') return 'new';
+    if (id === 'lobby' || id === 'game') return online ? 'game/' + online.code : 'play';
+    return '';
+  }
+  function syncUrl(id) {
+    const path = BASE + pathFor(id);
+    if (location.pathname === path) return;
+    try { history[routing ? 'replaceState' : 'pushState'](null, '', path + location.search); } catch (e) {}
   }
 
   // ================= setup screen =================
@@ -1334,7 +1375,7 @@ window.createFfgRoom = function () {
   function openProfile(ret) {
     profileReturn = ret || 'setup';
     $('#profile-lead').textContent = store.profileDone ? 'This is you in every game on this phone.' : 'Set this up once. It’s you in every game on this phone.';
-    $('#profile-save').textContent = store.profileDone ? 'Save' : (profileReturn === 'setup' ? 'Save and play' : 'Save');
+    $('#profile-save').textContent = profileReturn === 'join' ? 'Save and join' : store.profileDone ? 'Save' : (profileReturn === 'setup' ? 'Save and play' : 'Save');
     renderProfile();
     show('profile');
     if (!store.profileDone) setTimeout(() => { const i = $('#profile-name'); if (!i.value) i.focus({ preventScroll: true }); }, 300);
@@ -1348,7 +1389,8 @@ window.createFfgRoom = function () {
     myThumbCache = null;
     save();
     renderMeChip();
-    if (profileReturn === 'setup') { renderSetup(); show('setup'); } else show('intro');
+    if (profileReturn === 'join') { const code = pendingJoin; pendingJoin = null; renderSetup(); show('setup'); if (code) joinWhenReady(code); }
+    else if (profileReturn === 'setup') { renderSetup(); show('setup'); } else show('intro');
   }
   $('#profile-photo').addEventListener('click', () => { photoFor = 'me'; $('#cam').click(); });
   $('#profile-name').addEventListener('input', e => e.target.classList.remove('need'));
@@ -1370,7 +1412,7 @@ window.createFfgRoom = function () {
     };
     requestAnimationFrame(run); setTimeout(run, 350);
   }
-  document.addEventListener('focusin', e => { if (isSetupInput(e.target)) reveal(e.target); });
+  document.addEventListener('focusin', e => { if (isSetupInput(e.target) && matchMedia('(pointer: coarse)').matches) reveal(e.target); });
   document.addEventListener('focusout', () => setTimeout(() => {
     if (!isSetupInput(document.activeElement)) { setupEl.classList.remove('typing'); $('#profile').classList.remove('typing'); }
   }, 120));
@@ -2216,8 +2258,15 @@ window.createFfgRoom = function () {
     if (!online) return;
     $('#lobby-code').textContent = online.code;
     const host = online.role === 'host';
+    const link = location.origin + BASE + 'join/' + online.code, qr = $('#lobby-qr');
+    if (window.qrcode && qr.dataset.link !== link) {
+      const q = qrcode(0, 'M'); q.addData(link); q.make();
+      $('#lobby-qr-img').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+      qr.dataset.link = link;
+    }
+    qr.hidden = !window.qrcode;
     $('#lobby-hint').textContent = host
-      ? 'Friends open this page and tap your game under Open games, or type this code.'
+      ? 'Friends scan the QR code, tap your game under Open games, or type this code.'
       : (S ? 'You’re in. The host starts the game.' : 'Connecting to the game…');
     const seats = S && S.seats ? S.seats : [];
     $('#lobby-count').textContent = seats.length ? `Players · ${seats.length} of 6` : 'Players';
@@ -2296,10 +2345,39 @@ window.createFfgRoom = function () {
   $('#quit').addEventListener('click', leaveGame);
   addEventListener('pagehide', () => { if (online && online.role === 'host' && room) room.presence({ host: null }).catch(() => {}); });
 
+  // QR / shared link: /join/1234 joins straight away, after setting up a player if needed
+  let pendingJoin = null;
+  function joinWhenReady(code) { roomP.then(() => { if (room && !online) joinGame(code); }); }
+  function autoJoin(code) {
+    store.mode = 'online'; save(); renderSetup();
+    if (!store.profileDone || !String(store.me.name || '').trim()) { pendingJoin = code; openProfile('join'); return; }
+    show('setup');
+    joinWhenReady(code);
+  }
+
+  addEventListener('popstate', () => {
+    routing = true;
+    try {
+      const p = routeNow();
+      if (current === 'game' || current === 'lobby') {
+        if (!(online && p === 'game/' + online.code)) leaveGame(); // also leaves an online game
+      } else if (p === 'profile') openProfile(current === 'setup' ? 'setup' : 'intro');
+      else if (p === 'new' && store.profileDone) { renderSetup(); show('setup'); }
+      else if (p === '') show('intro');
+      else syncUrl(current); // a game we can't step back into: keep the URL on this screen
+    } finally { routing = false; }
+  });
+
   renderMute();
   renderMeChip();
   renderSetup();
-  show('intro');
+  routing = true;
+  const first = routeNow(), firstLink = first.match(/^(?:join|game)\/(\d{4})$/);
+  if (firstLink) autoJoin(firstLink[1]);
+  else if (first === 'profile') openProfile('intro');
+  else if (first === 'new' || first === 'play') { if (store.profileDone) show('setup'); else openProfile('setup'); }
+  else show('intro');
+  routing = false;
 })();
 </script>
 

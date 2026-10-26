@@ -2,7 +2,13 @@
   publish = "."
   command = ""
 
+# the game is one page; /new, /join/1234, /game/1234 etc. are routes inside it
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
 [[headers]]
-  for = "/index.html"
+  for = "/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"

@@ -26,17 +26,19 @@ window.FFG_CONFIG = {
 
 ## 3. Try it on your computer
 
-Open a terminal in this folder and run either:
+Open a terminal in this folder and run:
 
 ```
-npx serve .
+npx serve -s .
 ```
-or
-```
-python3 -m http.server 8000
-```
+
+(`-s` sends every address to `index.html`, so links like `/join/1234` work. `python3 -m http.server 8000` also works, but only from the start page.)
 
 Open the address it prints in two browser windows, pick **Own phones** in both, host in one and join from the other. Under "Open games", the status line should read "Connected · 1 other screen here".
+
+## Addresses
+
+Each screen has its own address: `/` (start), `/profile`, `/new` (set up a game), `/play` (a game on one phone) and `/game/1234` (an online game). The host's lobby shows a QR code for `/join/1234`. Scanning it opens the game and joins straight away, asking for a name first if that phone hasn't set up a player yet. On Netlify, `netlify.toml` routes all of these to `index.html`.
 
 ## 4. Put it on Netlify
 
