@@ -93,8 +93,9 @@ const prof = n => JSON.stringify({ mode: 'online', tricks: 2, bestOf: 1, stake: 
   }
   await A.waitForSelector('#result:not([hidden])', { timeout: 8000 });
   await B.waitForSelector('#result:not([hidden])', { timeout: 8000 });
-  const ra = (await A.textContent('.res-name')).trim(), rb = (await B.textContent('.res-name')).trim();
-  console.log(`after ${pulls} pulls -> A result: ${ra} | B result: ${rb} | agree: ${ra === rb}`);
+  const res = p => p.evaluate(() => ({ loser: document.querySelector('.res-card').dataset.loser, title: document.querySelector('.res-big').textContent }));
+  const ra = await res(A), rb = await res(B);
+  console.log(`after ${pulls} pulls -> A: ${ra.title} | B: ${rb.title} | loser on both: ${ra.loser} / ${rb.loser} | agree: ${ra.loser === rb.loser && ra.title !== rb.title}`);
   console.log('A buttons:', await A.$$eval('.res-actions button', e => e.map(x => x.textContent)), '| B:', (await B.textContent('.res-actions')).trim().slice(0, 60));
 
   // new match from host reaches guest

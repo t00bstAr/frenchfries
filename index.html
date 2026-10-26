@@ -709,6 +709,56 @@ button.step:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--carto
 .tally-row .pips i { width: 10px; height: 10px; background: var(--line); }
 .res-actions { width: 100%; display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
 .pass-card .res-av .av { border-color: var(--paper-2); }
+
+/* result moods: the loser's world goes grey, winners get confetti */
+.res-card { position: relative; z-index: 1; }
+.res-confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.res-big { font-family: var(--display); font-weight: 400; line-height: 1; margin: 12px 0 0; font-size: 54px; text-wrap: balance; }
+.res-big.mid { font-size: 36px; }
+.res-sub b { color: var(--ink); }
+#app, #fx { transition: filter .6s; }
+body:has(#result.mood-lost:not([hidden])) #app,
+body:has(#result.mood-lost:not([hidden])) #fx { filter: grayscale(1) brightness(.72); }
+#result.mood-lost { background: rgba(20,26,40,.62); }
+.res-card.lost { background: #f1f2f5; box-shadow: 0 7px 0 #3a4152; }
+.res-card.lost .res-eyebrow { color: #7b8294; }
+.res-card.lost .tally { border-top-color: #e2e4ea; }
+.res-av .av { position: relative; z-index: 1; }
+.res-av .tag { z-index: 2; }
+.res-av.grey .av { filter: grayscale(1); border-color: #b7bcc7; transform: rotate(-4deg); }
+.res-av.small .av { --s: 80px; }
+.lost-t { color: var(--carton); }
+.res-card.win { box-shadow: 0 7px 0 var(--sky-ink), 0 0 0 6px var(--fry); }
+.res-card.win .res-eyebrow { color: var(--sky-deep); }
+.res-av.shine::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 230px; height: 230px; margin: -115px 0 0 -115px;
+  border-radius: 50%; background: repeating-conic-gradient(var(--fry-light) 0 12deg, transparent 12deg 24deg);
+  -webkit-mask: radial-gradient(closest-side, #000 55%, transparent); mask: radial-gradient(closest-side, #000 55%, transparent);
+  opacity: .85; animation: spin 14s linear infinite;
+}
+.res-av.shine.small::before { width: 170px; height: 170px; margin: -85px 0 0 -85px; }
+@keyframes spin { to { transform: rotate(1turn); } }
+.res-av .tag.safe { background: var(--fry); color: var(--ink); box-shadow: 0 3px 0 var(--fry-shade); }
+.win-t { color: var(--ink); text-shadow: 0 4px 0 var(--fry); }
+.loser-chip { display: flex; gap: 10px; align-items: center; text-align: left; background: var(--paper-2); border-radius: 14px; padding: 8px 12px; width: 100%; box-sizing: border-box; font-size: 14px; color: var(--muted); font-weight: 600; }
+.loser-chip b { color: var(--ink); }
+.loser-chip .av { --s: 36px; filter: grayscale(1); flex: none; }
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 4px; }
+.duo .side { border-radius: 18px; padding: 16px 8px 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.duo .lose-side { background: #eceef2; }
+.duo .lose-side .res-av .av { --s: 84px; border-width: 4px; }
+.duo .lose-side .tag { font-size: 13px; }
+.duo .win-side { background: #fff6c7; box-shadow: inset 0 0 0 3px var(--fry); }
+.winners { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; min-height: 93px; }
+.winners .av { --s: 62px; border: 4px solid var(--fry); box-sizing: content-box; }
+.winners .av + .av { margin-left: -16px; }
+.winners.n3 .av { --s: 46px; }
+.winners.n4 .av { --s: 34px; border-width: 3px; }
+.winners.n3 .av + .av, .winners.n4 .av + .av { margin-left: -12px; }
+.duo .nm { font-size: 15px; margin-top: 6px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.verdict { font-family: var(--display); font-size: 30px; line-height: 1; }
+.lose-v { color: var(--carton); }
+.win-v { color: var(--ink); text-shadow: 0 3px 0 var(--fry); }
 .pass-card .lead { margin: 0; font-weight: 800; color: var(--muted); }
 
 .toast {
@@ -745,13 +795,15 @@ button.step:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--carto
   #setup { gap: 10px; }
   .res-av .av { --s: 88px; }
   .res-name { font-size: 30px; }
+  .res-big { font-size: 44px; }
+  .res-big.mid { font-size: 30px; }
   .res-card { gap: 8px; padding: 18px 16px 12px; }
 }
 @media (max-height: 560px) {
   .strip { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-icon .rise.refill, .hero-icon .bob, .hero-icon.jump, .stage.tense .carton-wrap, .stage.jump .carton-wrap, .res-card, .left-count.hot, .live-dot { animation: none; }
+  .hero-icon .rise.refill, .hero-icon .bob, .hero-icon.jump, .stage.tense .carton-wrap, .stage.jump .carton-wrap, .res-card, .left-count.hot, .live-dot, .res-av.shine::before { animation: none; }
 }
 </style>
 <!-- ============================================================
@@ -1183,6 +1235,10 @@ window.createFfgRoom = function () {
   const sPop = () => { tone('sine', 520, 1100, .09, .25); tone('triangle', 1400, 900, .06, .08, .02); };
   const sClick = () => tone('square', 180, 120, .05, .12);
   const sBoom = () => { noise(.5, .55); tone('sine', 120, 40, .45, .6); tone('triangle', 220, 900, .35, .18, .05); tone('triangle', 900, 300, .4, .12, .3); };
+  const sWin = () => { [523, 659, 784].forEach((f, i) => tone('triangle', f, f * 1.01, .16, .2, i * .11)); tone('triangle', 1047, 1050, .55, .22, .33); tone('sine', 1568, 2093, .3, .07, .5); };
+  const sWinSmall = () => { tone('triangle', 659, 665, .12, .16); tone('triangle', 988, 992, .3, .16, .1); };
+  const sLose = () => { [392, 370, 349].forEach((f, i) => tone('triangle', f, f * .98, .28, .2, i * .32)); tone('triangle', 330, 247, .95, .22, .96); };
+  const sLoseSmall = () => { tone('triangle', 330, 320, .2, .18); tone('triangle', 294, 220, .45, .18, .22); };
   const sBeat = t => { tone('sine', 78, 48, .13, .18 + .4 * t); tone('sine', 70, 44, .12, .12 + .3 * t, .16); };
   const buzz = p => { if (store.muted) return; try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
 
@@ -1951,26 +2007,78 @@ window.createFfgRoom = function () {
   function pipsHTML(l, tgt) {
     return `<span class="pips">${Array.from({ length: tgt }, (_, j) => `<i class="${j < l ? 'x' : ''}"></i>`).join('')}</span>`;
   }
+  // falling confetti behind the result card
+  function confetti(host, n) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const c = document.createElement('canvas'); c.className = 'res-confetti'; host.prepend(c);
+    const g = c.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight;
+    c.width = W * dpr; c.height = H * dpr; g.scale(dpr, dpr);
+    const cols = ['#f5dc4e', '#e2534b', '#5a8ee0', '#ffffff', '#fff09a', '#2fa36f'];
+    const ps = Array.from({ length: n }, (_, i) => ({
+      x: W / 2 + rand(-.15, .15) * W, y: H * .3 + rand(-20, 20), vx: rand(-1, 1) * W * .012, vy: rand(-17, -6),
+      w: rand(6, 10), h: rand(10, 16), a: rand(0, 6.3), va: rand(-.25, .25), sw: rand(0, 6.3), c: cols[i % cols.length]
+    }));
+    const t0 = performance.now();
+    (function step(t) {
+      if (!c.isConnected) return;
+      const age = (t - t0) / 1000;
+      g.clearRect(0, 0, W, H);
+      g.globalAlpha = Math.max(0, Math.min(1, 4.2 - age));
+      for (const p of ps) {
+        p.vy = Math.min(p.vy + .45, 3.2); p.vx *= .97; p.sw += .08;
+        p.x += p.vx + Math.sin(p.sw) * .9; p.y += p.vy; p.a += p.va;
+        g.save(); g.translate(p.x, p.y); g.rotate(p.a); g.scale(1, Math.cos(p.sw * 1.7));
+        g.fillStyle = p.c; g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); g.restore();
+      }
+      if (age < 4.2) requestAnimationFrame(step); else c.remove();
+    })(t0);
+  }
+
   function showResult() {
     const k = S.boom.seat, info = seatInfo(k), tgt = target(S);
     const over = S.status === 'matchover';
     const stake = (S.opts.stake || '').trim();
-    const mine = isMine(k);
-    let eyebrow, tag, sub;
-    if (over) {
-      eyebrow = stake || (S.opts.bestOf > 1 ? 'Loses the match' : 'Pulled the trick fry');
-      tag = stake ? (mode === 'cpu' && info.cpu ? 'Computer pays' : 'It’s you!') : 'Boom';
-      if (mode === 'cpu') sub = info.cpu ? 'The computer lost. You win this one.' : 'The computer wins this time.';
-      else if (mode === 'online' && mine) sub = 'That’s you. Unlucky.';
-      else sub = S.opts.bestOf > 1 ? `${info.name} reached ${tgt} losses first.` : `${info.name} pulled the trick fry.`;
+    const losses = S.losses[k] || 0;
+    // whose eyes: online and vs computer show it from this phone's side; pass the phone shows everyone
+    const meK = mode === 'online' ? mySeat() : mode === 'cpu' ? S.seats.findIndex(s => s.kind === 'human') : -1;
+    const view_ = meK < 0 ? 'shared' : meK === k ? 'lost' : 'won';
+    const me = meK >= 0 ? seatInfo(meK) : null;
+    const winnersK = S.seats.map((_, i) => i).filter(i => i !== k && !S.seats[i].gone);
+    const tallyName = (q, i) => esc(q.name) + (view_ !== 'shared' && i === meK ? ' (you)' : '');
+    let body;
+    if (view_ === 'lost') {
+      const sub = over
+        ? (stake ? '<b>It’s on you.</b>' : S.opts.bestOf > 1 ? `You reached ${tgt} losses first.` : 'You pulled the trick fry.')
+        : `You have ${losses} of ${tgt} losses.${tgt - losses === 1 ? ' One more and you lose the match.' : ''}`;
+      body = `<p class="res-eyebrow">${esc(over ? (stake || (S.opts.bestOf > 1 ? 'Loses the match' : 'Pulled the trick fry')) : `Round ${S.round} · best of ${S.opts.bestOf}`)}</p>
+        <div class="res-av grey${over ? '' : ' small'}">${avatar(info)}<span class="tag">Boom</span></div>
+        <h2 class="res-big lost-t${over ? '' : ' mid'}">${over ? 'You lost!' : 'You lost this round'}</h2>
+        <p class="res-sub">${sub}</p>`;
+    } else if (view_ === 'won') {
+      const what = over ? (stake ? `It’s on ${esc(info.name)}.` : S.opts.bestOf > 1 ? `${tgt} losses first.` : '') : `That’s ${losses} of ${tgt} losses.`;
+      body = `<p class="res-eyebrow">${esc(over ? (stake || 'Match over') : `Round ${S.round} · best of ${S.opts.bestOf}`)}</p>
+        <div class="res-av shine${over ? '' : ' small'}">${avatar(me)}<span class="tag safe">Safe!</span></div>
+        <h2 class="res-big win-t${over ? '' : ' mid'}">${over ? 'You win!' : 'Safe this round'}</h2>
+        <div class="loser-chip">${avatar(info)}<span><b>${esc(info.name)}</b> pulled the trick fry${what ? `<br><small>${what}</small>` : ''}</span></div>`;
+    } else if (over) {
+      const ws = winnersK.map(i => seatInfo(i));
+      const wName = ws.length === 1 ? ws[0].name : ws.length === 2 ? `${ws[0].name} & ${ws[1].name}` : 'Everyone else';
+      const sub = stake ? `<b>It’s on ${esc(info.name)}.</b>` : S.opts.bestOf > 1 ? `${esc(info.name)} reached ${tgt} losses first.` : `${esc(info.name)} pulled the trick fry.`;
+      body = `<p class="res-eyebrow">${esc(stake || 'Match over')}</p>
+        <div class="duo">
+          <div class="side lose-side"><div class="res-av grey">${avatar(info)}<span class="tag">Boom</span></div><b class="nm">${esc(info.name)}</b><span class="verdict lose-v">Loses</span></div>
+          <div class="side win-side"><div class="winners n${Math.min(4, Math.max(2, ws.length))}">${ws.map(avatar).join('')}</div><b class="nm">${esc(wName)}</b><span class="verdict win-v">Win${ws.length === 1 ? 's' : ''}!</span></div>
+        </div>
+        <p class="res-sub">${sub}</p>`;
     } else {
-      eyebrow = `Round ${S.round} · best of ${S.opts.bestOf}`;
-      tag = 'Boom';
-      sub = `${mine && mode === 'online' ? 'You have' : info.name + ' has'} ${S.losses[k]} of ${tgt} losses. First to ${tgt} loses the match.`;
+      body = `<p class="res-eyebrow">Round ${S.round} · best of ${S.opts.bestOf}</p>
+        <div class="res-av grey small">${avatar(info)}<span class="tag">Boom</span></div>
+        <h2 class="res-name">${esc(info.name)}</h2>
+        <p class="res-sub">${esc(info.name)} has ${losses} of ${tgt} losses. First to ${tgt} loses the match.</p>`;
     }
     const tally = S.opts.bestOf > 1 ? `<div class="tally">${S.seats.map((_, i) => {
       const q = seatInfo(i);
-      return `<div class="tally-row">${avatar(q)}<span class="n">${esc(q.name)}</span>${pipsHTML(S.losses[i] || 0, tgt)}</div>`;
+      return `<div class="tally-row">${avatar(q)}<span class="n">${tallyName(q, i)}</span>${pipsHTML(S.losses[i] || 0, tgt)}</div>`;
     }).join('')}</div>` : '';
     let actions;
     if (isController()) {
@@ -1982,15 +2090,16 @@ window.createFfgRoom = function () {
       actions = `<p class="wait">Waiting for ${esc(host ? cleanName(host.name) : 'the host')} to ${over ? 'start a new match' : 'start the next round'}…</p><button type="button" class="btn-plain" id="r-alt">Leave game</button>`;
     }
     const r = $('#result');
-    r.innerHTML = `<div class="res-card">
-      <p class="res-eyebrow">${esc(eyebrow)}</p>
-      <div class="res-av">${avatar(info)}<span class="tag">${esc(tag)}</span></div>
-      <h2 class="res-name">${esc(info.name)}</h2>
-      <p class="res-sub">${esc(sub)}</p>
+    // the full grey-out and the gold frame are saved for the end of the match
+    r.className = 'overlay' + (view_ === 'lost' && over ? ' mood-lost' : '');
+    r.innerHTML = `<div class="res-card${over ? (view_ === 'lost' ? ' lost' : view_ === 'won' ? ' win' : '') : ''}" data-loser="${esc(info.name)}">
+      ${body}
       ${tally}
       <div class="res-actions">${actions}</div>
     </div>`;
     r.hidden = false;
+    if (view_ === 'lost') (over ? sLose : sLoseSmall)();
+    else if (view_ === 'won' || over) { (over ? sWin : sWinSmall)(); confetti(r, over ? 150 : 45); }
     const main = $('#r-main');
     if (main) {
       main.addEventListener('click', () => {
