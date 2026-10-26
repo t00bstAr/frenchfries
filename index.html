@@ -2364,12 +2364,12 @@ window.createFfgRoom = function () {
     $('#lobby-code').textContent = online.code;
     const host = online.role === 'host';
     const link = location.origin + BASE + 'join/' + online.code, qr = $('#lobby-qr');
-    if (window.qrcode && qr.dataset.link !== link) {
+    if (host && window.qrcode && qr.dataset.link !== link) {
       const q = qrcode(0, 'M'); q.addData(link); q.make();
       $('#lobby-qr-img').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
       qr.dataset.link = link;
     }
-    qr.hidden = !window.qrcode;
+    qr.hidden = !host || !window.qrcode; // only the host invites; guests just wait
     $('#lobby-hint').textContent = host
       ? 'Friends scan the QR code, tap your game under Open games, or type this code.'
       : (S ? 'You’re in. The host starts the game.' : 'Connecting to the game…');

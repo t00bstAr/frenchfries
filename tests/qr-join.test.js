@@ -39,6 +39,7 @@ const prof = n => JSON.stringify({ mode: 'online', tricks: 2, bestOf: 1, stake: 
   await B.goto(link);
   await B.waitForSelector('#lobby:not([hidden])', { timeout: 8000 });
   await A.waitForFunction(() => document.querySelectorAll('#lobby-seats .seat-row').length === 2, null, { timeout: 8000 });
+  console.log('B (guest) sees QR:', await B.isVisible('#lobby-qr'), '| host sees QR:', await A.isVisible('#lobby-qr'));
   console.log('B (has player) opened QR link -> screen lobby, url', urlPath(B), '| seats:', (await B.$$eval('#lobby-seats .n', e => e.map(x => x.textContent))).join(', '));
 
   const C = await page('C', p => p.addInitScript(() => { if (!sessionStorage.cleared) { localStorage.removeItem('ffg.v2'); sessionStorage.cleared = 1; } }));
