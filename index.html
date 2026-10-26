@@ -197,14 +197,10 @@ button.step:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--carto
 }
 #setup.typing { padding-bottom: 60vh; }
 .setup-head { width: 100%; max-width: 440px; display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; flex: none; }
-/* the title bar stays put while the screen scrolls; the sky colour runs edge to edge behind it */
-#profile .setup-head, #setup .setup-head, #lobby .setup-head {
-  position: sticky; top: -4px; z-index: 3;
-  margin-top: -4px; padding-top: 4px; /* cover the screen's 4px top padding too */
-  background: var(--sky);
-  box-shadow: 0 0 0 100vmax var(--sky);
-  clip-path: inset(0 -100vmax);
-}
+/* the title row sits inside the card */
+.panel > .setup-head { max-width: none; margin: -4px 0 -2px; }
+.panel .setup-title { color: var(--ink); text-shadow: none; font-size: 24px; }
+.panel .back { background: var(--paper-2); color: var(--sky-deep); }
 /* wider screens: the card sits in the middle of the space under the title bar */
 @media (min-width: 600px) {
   #profile > .panel, #setup > .panel, #lobby > .panel { margin-block: auto; }
@@ -963,12 +959,12 @@ window.createFfgRoom = function () {
 
   <!-- Your player -->
   <section id="profile" hidden aria-label="Your player">
-    <div class="setup-head">
-      <button type="button" class="back" id="profile-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <h1 class="setup-title">Your player</h1>
-      <span></span>
-    </div>
     <div class="panel profile-panel">
+      <div class="setup-head">
+        <button type="button" class="back" id="profile-back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <h1 class="setup-title">Your player</h1>
+        <span></span>
+      </div>
       <p class="lead" id="profile-lead">Set this up once. It’s you in every game on this phone.</p>
       <button type="button" class="big-av" data-photo="me" id="profile-photo" aria-label="Add a selfie"></button>
       <p class="photo-hint" id="photo-hint">Tap to add a selfie</p>
@@ -982,12 +978,12 @@ window.createFfgRoom = function () {
 
   <!-- Setup -->
   <section id="setup" hidden aria-label="Set up a game">
-    <div class="setup-head">
-      <button type="button" class="back" id="to-intro" aria-label="Back to start"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <h1 class="setup-title">New game</h1>
-      <span></span>
-    </div>
     <div class="panel">
+      <div class="setup-head">
+        <button type="button" class="back" id="to-intro" aria-label="Back to start"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <h1 class="setup-title">New game</h1>
+        <span></span>
+      </div>
       <div>
         <span class="field-label" id="mode-l">Who's playing</span>
         <div class="seg" role="group" aria-labelledby="mode-l">
@@ -1051,12 +1047,12 @@ window.createFfgRoom = function () {
 
   <!-- Online lobby -->
   <section id="lobby" hidden aria-label="Online game">
-    <div class="setup-head">
-      <button type="button" class="back" id="lobby-leave" aria-label="Leave game"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <h1 class="setup-title">Online game</h1>
-      <span></span>
-    </div>
     <div class="panel">
+      <div class="setup-head">
+        <button type="button" class="back" id="lobby-leave" aria-label="Leave game"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <h1 class="setup-title">Online game</h1>
+        <span></span>
+      </div>
       <div class="code-box">
         <span class="field-label">Game code</span>
         <div class="code" id="lobby-code">····</div>
