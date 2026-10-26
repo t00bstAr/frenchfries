@@ -415,6 +415,9 @@ button.step:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--carto
 }
 .btn-big:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--carton-shade); }
 .btn-big:disabled { opacity: .45; transform: none; box-shadow: 0 5px 0 var(--carton-shade); }
+/* every other button gives a small squish when pressed (zero specificity, so the big buttons keep their own push-down) */
+:where(button) { transition: transform .08s ease-out, filter .08s; }
+:where(button:not(:disabled)):active { transform: scale(.95); filter: brightness(.93); }
 .btn-plain {
   border: 0;
   background: none;
@@ -2480,6 +2483,9 @@ window.createFfgRoom = function () {
       else syncUrl(current); // a game we can't step back into: keep the URL on this screen
     } finally { routing = false; }
   });
+
+  // iOS Safari only shows :active press states once the page listens for touches
+  document.addEventListener('touchstart', () => {}, { passive: true });
 
   renderMute();
   renderMeChip();
