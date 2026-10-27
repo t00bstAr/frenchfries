@@ -53,7 +53,11 @@ The nicer long-term way: put the folder in a GitHub repo and choose **Add new si
 
 ## 5. On your phone
 
-Open the Netlify link in Safari or Chrome, then **Share → Add to Home Screen**. It opens full screen like an app, and the selfie button opens the front camera directly.
+Open the Netlify link in Safari or Chrome, then **Share → Add to Home Screen** (Android Chrome also offers **Install app**). It opens full screen like an app, with its own icon, and the selfie button opens the front camera directly.
+
+## Sharing and the app icon
+
+Links to the game show a preview card with `og-image.png`. The app icons live in `icons/` and are listed in `manifest.webmanifest`. The `og:image` and `og:url` tags in `index.html` point to `https://frenchfries-game.netlify.app`, so change them if the site moves. To redraw the share image and icons, run `node tools/make-assets.js`.
 
 ## How online play works
 
