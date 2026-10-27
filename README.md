@@ -34,7 +34,7 @@ npx serve -s .
 
 (`-s` sends every address to `index.html`, so links like `/join/1234` work. `python3 -m http.server 8000` also works, but only from the start page.)
 
-Open the address it prints in two browser windows, pick **Online** in both, host in one and join from the other. Under "Open games", the status line should read "Connected · 1 other screen here".
+Open the address it prints in two browser windows, pick **Online** in both, host in one and join from the other. The dot next to "Open games" turns green when connected, and the hosted game shows up in the other window's list.
 
 ## Addresses
 

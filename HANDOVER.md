@@ -47,7 +47,7 @@ Use whatever is available to you, in this order:
 **Never use the `service_role` or secret key.** It would be exposed in a public page.
 
 ### 2. Check the Realtime settings
-In the Supabase dashboard, go to Realtime → Settings. **"Private channels only" must be OFF**, because the game uses public channels with the anon key. It's off by default for new projects. If you can't check this yourself, ask the owner to confirm. This is the most likely reason for a "Connected · no one else here" symptom when two devices are actually open.
+In the Supabase dashboard, go to Realtime → Settings. **"Private channels only" must be OFF**, because the game uses public channels with the anon key. It's off by default for new projects. If you can't check this yourself, ask the owner to confirm. This is the most likely reason two devices both connect (green dot by "Open games") but never see each other's games.
 
 ### 3. Put the keys in
 Edit the `window.FFG_CONFIG` block in `index.html`:
@@ -63,10 +63,10 @@ The anon key is meant to be public, so committing it is fine.
 
 ### 4. Test locally
 1. **Automated two-player test, no Supabase needed.** Appendix A is a mock Supabase that links browser tabs through a `BroadcastChannel`. Appendix B is a Playwright script. It hosts a game, joins from a second tab, checks live drag, plays a round to the explosion, checks both screens agree, starts a rematch, and checks what happens when the host leaves. Save them as `tests/mock-supabase.js` and `tests/two-player.test.js`, run `npm i -D playwright matter-js@0.19.0` and `npx playwright install chromium`, then `node tests/two-player.test.js`. A passing run prints `agree: true`, `The host left the game.` and `page errors: none`.
-2. **Real Supabase test.** Serve the folder (`npx serve -s .`) and open it in two separate browser windows (or a normal and a private window). In each one, set up a player, tap Play, and choose **Online**. Under "Open games" the status line should read `Connected · 1 other screen here`. Host in one window and join from the other, then play a round.
+2. **Real Supabase test.** Serve the folder (`npx serve -s .`) and open it in two separate browser windows (or a normal and a private window). In each one, set up a player, tap Play, and choose **Online**. The dot next to "Open games" should turn green, and the hosted game should appear in the other window's list. Host in one window and join from the other, then play a round.
    - If the line says "Online play isn't set up yet": the config still has placeholders.
    - If it says "Can't reach the game server": the URL or key is wrong, or the network is blocking it. Check the browser console.
-   - If both say "Connected · no one else here": re-check step 2.
+   - If both dots are green but neither sees the other's game: re-check step 2.
 
 ### 5. Git and Netlify
 - Add a `.gitignore` containing `node_modules/`, `.DS_Store` and `.netlify/`. Commit `index.html`, `README.md`, `HANDOVER.md`, `tests/`, `netlify.toml` and `package.json` (if created). Push to the owner's existing repo. Ask which remote and branch if it isn't already configured.

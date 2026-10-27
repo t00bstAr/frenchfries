@@ -408,7 +408,8 @@ button.step:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--carto
 .game-row .go { background: var(--ok); color: #fff; font-weight: 800; border-radius: 999px; padding: 6px 12px; font-size: 13px; }
 .game-row > span:nth-child(2) { min-width: 0; }
 .empty-games { margin: 0; padding: 12px; border-radius: 14px; background: var(--paper-2); color: var(--muted); font-weight: 600; font-size: 13px; text-align: center; }
-.live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; animation: pulse 1.6s ease-in-out infinite; }
+.live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; animation: pulse 1.6s ease-in-out infinite; transition: background .3s; }
+.live-dot.off { background: var(--line); animation: none; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
 .code-join { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 10px; }
 .code-join .text-in { letter-spacing: 4px; font-variant-numeric: tabular-nums; }
@@ -1194,7 +1195,6 @@ window.createFfgRoom = function () {
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
   const KEY = 'ffg.v2';
-  const BUILD = '1.0-web';
   const N = 16;
   const AV_COLORS = ['#e2534b', '#f09a2e', '#2fa36f', '#8a63d2', '#e2649f', '#1f9bb0'];
   const uid = () => Math.random().toString(36).slice(2, 10);
@@ -1328,7 +1328,7 @@ window.createFfgRoom = function () {
   const MODE_HINT = {
     cpu: 'Just you against the computer.',
     pass: 'One phone, passed around the table.',
-    online: 'Everyone on their own phone. Host a game, and friends join by QR or code.'
+    online: 'Everyone on their own phone.'
   };
   function renderSetup() {
     $$('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === store.mode)));
@@ -2205,10 +2205,13 @@ window.createFfgRoom = function () {
     if (store.mode !== 'online') return;
     const box = $('#open-games'), note = $('#online-note');
     const joinBtn = $('#join-btn'), start = $('#start');
+    // the dot by "Open games" shows the connection; the note below only speaks up when something's off
+    const setNote = (text, state) => { note.textContent = text; note.hidden = !text; note.dataset.state = state; };
+    $('#online-block .live-dot').classList.toggle('off', !(roomState === 'ready' && roomConn));
     if (roomState !== 'ready') {
       const noCfg = window.FFG_ROOM_REASON === 'config';
       box.innerHTML = `<p class="empty-games">${roomState === 'pending' ? 'Connecting…' : noCfg ? 'Online play isn’t set up yet.' : 'Can’t reach the game server right now.'}</p>`;
-      note.textContent = roomState === 'pending' ? '' : noCfg ? 'Add your Supabase URL and key at the top of index.html (see README).' : 'Check your connection and reload the page.';
+      setNote(roomState === 'pending' ? '' : noCfg ? 'Add your Supabase URL and key at the top of index.html (see README).' : 'Check your connection and reload the page.', roomState === 'pending' ? 'connecting' : 'off');
       joinBtn.disabled = true; start.disabled = true;
       return;
     }
@@ -2220,13 +2223,8 @@ window.createFfgRoom = function () {
         ${avatar({ id: g.id, name: g.name })}
         <span><b>${esc(g.name)}'s game</b><small>${g.count} ${g.count === 1 ? 'player' : 'players'} · code ${g.code}</small></span>
         <span class="go">Join</span>
-      </button>`).join('') : '<p class="empty-games">No open games right now. Host one, or wait for a friend to host.</p>';
-    const here = room.peers();
-    const others = here.filter(p => !p.sameTab);
-    const mine = others.filter(p => p.isMe).length;
-    note.textContent = (!roomConn
-      ? 'Connecting to the game room…'
-      : `Connected · ${others.length ? `${others.length} other ${others.length === 1 ? 'screen' : 'screens'} here${mine ? ` (${mine} of them yours)` : ''}` : 'no one else has this page open right now'}.`) + ` · Build ${BUILD}`;
+      </button>`).join('') : '<p class="empty-games">No open games right now.<br>Host one, or wait for a friend to host.</p>';
+    setNote(roomConn ? '' : 'Connecting to the game room…', roomConn ? 'connected' : 'connecting');
   }
   $('#open-games').addEventListener('click', e => { const b = e.target.closest('[data-join]'); if (b) joinGame(b.dataset.join); });
   $('#join-code').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); $('#join-btn').disabled = roomState !== 'ready' || e.target.value.length !== 4; });
@@ -2278,7 +2276,7 @@ window.createFfgRoom = function () {
     online.noHost = setTimeout(() => {
       if (!online || online.role !== 'guest' || online.hostPeer) return;
       const seen = online.named.peers().filter(p => !p.sameTab).length;
-      leaveOnline(seen ? `Found ${seen} other ${seen === 1 ? 'screen' : 'screens'} on code ${code}, but no host. (Build ${BUILD})` : `No one else is on code ${code} from this screen. (Build ${BUILD})`);
+      leaveOnline(seen ? `Game ${code} has no host right now. It may have ended.` : `Couldn’t find game ${code}. Check the code and try again.`);
     }, 9000);
     $('#join-code').value = '';
     show('lobby'); renderLobby();

@@ -29,7 +29,7 @@ const prof = n => JSON.stringify({ mode: 'online', tricks: 2, bestOf: 1, stake: 
     await p.evaluate(v => { localStorage.setItem('ffg.v2', v); }, prof(name));
     await p.reload();
     await p.click('#play');
-    await p.waitForFunction(() => /Connected/.test(document.querySelector('#online-note').textContent), null, { timeout: 8000 });
+    await p.waitForFunction(() => document.querySelector('#online-note').dataset.state === 'connected', null, { timeout: 8000 });
     return p;
   };
   const A = await open('Anna');
@@ -40,7 +40,7 @@ const prof = n => JSON.stringify({ mode: 'online', tricks: 2, bestOf: 1, stake: 
 
   const B = await open('Mads');
   await B.waitForSelector(`[data-join="${code}"]`, { timeout: 8000 });
-  console.log('B sees open game:', await B.textContent(`[data-join="${code}"] b`), '| B status:', await B.textContent('#online-note'));
+  console.log('B sees open game:', await B.textContent(`[data-join="${code}"] b`), '| B connected:', await B.getAttribute('#online-note', 'data-state'));
   await B.click(`[data-join="${code}"]`);
   await A.waitForFunction(() => document.querySelectorAll('#lobby-seats .seat-row').length === 2, null, { timeout: 8000 });
   await B.waitForFunction(() => document.querySelectorAll('#lobby-seats .seat-row').length === 2, null, { timeout: 8000 });

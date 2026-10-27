@@ -29,7 +29,7 @@ const prof = n => JSON.stringify({ mode: 'online', tricks: 2, bestOf: 1, stake: 
   console.log('A start:', urlPath(A));
   await A.click('#play'); console.log('A after Play:', urlPath(A));
   
-  await A.waitForFunction(() => /Connected/.test(document.querySelector('#online-note').textContent));
+  await A.waitForFunction(() => document.querySelector('#online-note').dataset.state === 'connected');
   await A.click('#start'); await A.waitForSelector('#lobby:not([hidden])');
   const code = (await A.textContent('#lobby-code')).trim();
   const link = await A.getAttribute('#lobby-qr', 'data-link');
