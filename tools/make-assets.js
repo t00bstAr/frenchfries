@@ -22,7 +22,7 @@ function icon(size, inset, rounded) {
   return `<!doctype html><html><head>${FONTS}<style>
   html,body{margin:0;width:${size}px;height:${size}px;background:transparent}
   .bg{position:absolute;inset:0;background:${bg};${rounded ? `border-radius:${size * .22}px;` : ''}overflow:hidden}
-  .bg::before{content:"";position:absolute;left:50%;top:46%;width:${size * 1.3}px;height:${size * 1.3}px;margin:-${size * .65}px 0 0 -${size * .65}px;
+  .bg::before{content:"";position:absolute;left:50%;top:46%;width:${size * 2}px;height:${size * 2}px;margin:-${size}px 0 0 -${size}px;
     background:repeating-conic-gradient(rgba(255,255,255,.10) 0 9deg,transparent 9deg 18deg);border-radius:50%}
   svg{position:absolute;left:${inset}%;top:${inset - 2}%;width:${100 - 2 * inset}%;height:${100 - 2 * inset}%}
   </style></head><body><div class="bg"></div>${carton()}</body></html>`;
@@ -40,7 +40,7 @@ const og = `<!doctype html><html><head>${FONTS}<style>
   .fly{position:absolute;width:30px;height:150px}
   .fly i{position:absolute;inset:0;border-radius:5px;background:linear-gradient(90deg,#f5dc4e 0 62%,#e0c133 62%);box-shadow:inset 0 10px 0 #fff09a}
   .bit{position:absolute;width:16px;height:26px;border-radius:3px}
-  .text{position:absolute;left:72px;top:96px;width:560px}
+  .text{position:absolute;left:72px;top:58px;width:560px}
   h1{font-family:"Lilita One";font-weight:400;font-size:104px;line-height:.95;margin:0;color:#fff;text-shadow:0 7px 0 #24477f;letter-spacing:.5px}
   h1 span{display:block;color:#f5dc4e}
   p{margin:34px 0 0;font-size:31px;line-height:1.3;font-weight:800;color:#fff;max-width:520px;text-shadow:0 2px 0 rgba(36,71,127,.45)}
