@@ -387,6 +387,7 @@ button.step:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--carto
 .text-in::placeholder { color: #9aa7bf; font-weight: 600; }
 .hint { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; font-weight: 600; }
 .mode-hint { margin-top: 8px; text-align: center; }
+.more-games { margin: 2px 0 0; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--muted); }
 
 /* online block */
 .games { display: flex; flex-direction: column; gap: 8px; }
@@ -2199,7 +2200,8 @@ window.createFfgRoom = function () {
   function openGames() {
     if (!room) return [];
     return room.peers().filter(p => !p.sameTab && p.presence && p.presence.host && typeof p.presence.host === 'object' && /^\d{4}$/.test(String(p.presence.host.c)) && p.presence.host.w)
-      .map(p => ({ code: String(p.presence.host.c), name: cleanName(p.presence.host.n), count: clamp(+p.presence.host.k || 1, 1, 6), id: p.peer }));
+      .map(p => ({ code: String(p.presence.host.c), name: cleanName(p.presence.host.n), count: clamp(+p.presence.host.k || 1, 1, 6), id: p.peer, t: +p.presence.host.t || 0 }))
+      .sort((a, b) => b.t - a.t); // newest first
   }
   function renderOpenGames() {
     if (store.mode !== 'online') return;
@@ -2217,13 +2219,15 @@ window.createFfgRoom = function () {
     }
     start.disabled = false;
     joinBtn.disabled = !/^\d{4}$/.test($('#join-code').value);
-    const games = openGames();
-    box.innerHTML = games.length ? games.map(g => `
+    const games = openGames(), MAX_SHOWN = 5;
+    const more = games.length - MAX_SHOWN;
+    box.innerHTML = games.length ? games.slice(0, MAX_SHOWN).map(g => `
       <button type="button" class="game-row" data-join="${g.code}">
         ${avatar({ id: g.id, name: g.name })}
         <span><b>${esc(g.name)}'s game</b><small>${g.count} ${g.count === 1 ? 'player' : 'players'} · code ${g.code}</small></span>
         <span class="go">Join</span>
-      </button>`).join('') : '<p class="empty-games">No open games right now.<br>Host one, or wait for a friend to host.</p>';
+      </button>`).join('') + (more > 0 ? `<p class="more-games">+${more} more open ${more === 1 ? 'game' : 'games'}. Ask your host for the code.</p>` : '')
+      : '<p class="empty-games">No open games right now.<br>Host one, or wait for a friend to host.</p>';
     setNote(roomConn ? '' : 'Connecting to the game room…', roomConn ? 'connected' : 'connecting');
   }
   $('#open-games').addEventListener('click', e => { const b = e.target.closest('[data-join]'); if (b) joinGame(b.dataset.join); });
@@ -2252,7 +2256,7 @@ window.createFfgRoom = function () {
     try { named = await room.join('ffg-' + code); }
     catch (e) { $('#start').disabled = false; toast('Couldn’t start an online game. Try again.'); return; }
     mode = 'online';
-    online = { role: 'host', code, named, me: null, lastK: {}, thumb: await myThumb(), hostPeer: null, unsubs: [] };
+    online = { role: 'host', code, named, me: null, lastK: {}, thumb: await myThumb(), hostPeer: null, unsubs: [], since: Date.now() };
     S = { id: uid(), status: 'waiting', seats: [], opts: { tricks: store.tricks, bestOf: store.bestOf, stake: store.stake.trim() }, losses: [], round: 0, v: 1 };
     view.key = null;
     online.unsubs.push(named.onPeers(onNamedPeers, onRoomError));
@@ -2290,7 +2294,7 @@ window.createFfgRoom = function () {
   }
   function lobbyAnnounce() {
     if (!room || !online || online.role !== 'host' || !S) return;
-    room.presence({ host: { c: online.code, n: myName(), k: S.seats.filter(s => !s.gone).length, w: S.status === 'waiting' ? 1 : 0 } }).catch(() => {});
+    room.presence({ host: { c: online.code, n: myName(), k: S.seats.filter(s => !s.gone).length, w: S.status === 'waiting' ? 1 : 0, t: online.since } }).catch(() => {});
   }
   function sendIntent(i) {
     online.k++;
