@@ -55,7 +55,7 @@ const og = `<!doctype html><html><head>${FONTS}<style>
   <div class="text">
     <h1>The Frenchfries <span>Game</span></h1>
     <p>Everyone pulls a fry. Pull the trick fry and the whole carton blows.</p>
-    <div class="chips"><b>Vs computer</b><b>Pass the phone</b><b>Own phones</b></div>
+    <div class="chips"><b>Vs computer</b><b>Pass the phone</b><b>Online</b></div>
   </div>
 </body></html>`;
 

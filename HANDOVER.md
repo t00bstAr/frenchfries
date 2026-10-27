@@ -11,7 +11,7 @@ You're picking up a finished browser game and need to wire it up for real: conne
 
 ## What the game is
 
-A party / "draw straws" game. A carton of 16 fries contains 1–3 hidden trick fries. Players take turns dragging a fry out of the carton, and whoever pulls a trick fry makes the whole carton explode and loses the round. Modes: **Vs computer**, **Pass the phone**, and **Own phones** (online multiplayer). Best of 1/3/5 rounds, optional "What are we deciding?" stake, selfie avatars, and a one-time "Your player" profile.
+A party / "draw straws" game. A carton of 16 fries contains 1–3 hidden trick fries. Players take turns dragging a fry out of the carton, and whoever pulls a trick fry makes the whole carton explode and loses the round. Modes: **Vs computer**, **Pass the phone**, and **Online** (each player on their own phone). Best of 1/3/5 rounds, optional "What are we deciding?" stake, selfie avatars, and a one-time "Your player" profile.
 
 Everything lives in **one file, `index.html`**: HTML, CSS and JS, no build step and no framework. Libraries load from CDNs:
 - `matter-js@0.19.0` (cdnjs): physics for the explosion
@@ -63,7 +63,7 @@ The anon key is meant to be public, so committing it is fine.
 
 ### 4. Test locally
 1. **Automated two-player test, no Supabase needed.** Appendix A is a mock Supabase that links browser tabs through a `BroadcastChannel`. Appendix B is a Playwright script. It hosts a game, joins from a second tab, checks live drag, plays a round to the explosion, checks both screens agree, starts a rematch, and checks what happens when the host leaves. Save them as `tests/mock-supabase.js` and `tests/two-player.test.js`, run `npm i -D playwright matter-js@0.19.0` and `npx playwright install chromium`, then `node tests/two-player.test.js`. A passing run prints `agree: true`, `The host left the game.` and `page errors: none`.
-2. **Real Supabase test.** Serve the folder (`npx serve -s .`) and open it in two separate browser windows (or a normal and a private window). In each one, set up a player, tap Play, and choose **Own phones**. Under "Open games" the status line should read `Connected · 1 other screen here`. Host in one window and join from the other, then play a round.
+2. **Real Supabase test.** Serve the folder (`npx serve -s .`) and open it in two separate browser windows (or a normal and a private window). In each one, set up a player, tap Play, and choose **Online**. Under "Open games" the status line should read `Connected · 1 other screen here`. Host in one window and join from the other, then play a round.
    - If the line says "Online play isn't set up yet": the config still has placeholders.
    - If it says "Can't reach the game server": the URL or key is wrong, or the network is blocking it. Check the browser console.
    - If both say "Connected · no one else here": re-check step 2.

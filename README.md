@@ -1,6 +1,6 @@
 # The Frenchfries Game
 
-The whole game is one file, `index.html`. Vs computer and pass-the-phone work straight away. Online play ("Own phones") uses Supabase Realtime, so it needs a free Supabase project. You don't need a database, tables or a server of your own.
+The whole game is one file, `index.html`. Vs computer and pass-the-phone work straight away. Online play uses Supabase Realtime, so it needs a free Supabase project. You don't need a database, tables or a server of your own.
 
 ## 1. Create the Supabase project (about 5 minutes)
 
@@ -34,7 +34,7 @@ npx serve -s .
 
 (`-s` sends every address to `index.html`, so links like `/join/1234` work. `python3 -m http.server 8000` also works, but only from the start page.)
 
-Open the address it prints in two browser windows, pick **Own phones** in both, host in one and join from the other. Under "Open games", the status line should read "Connected · 1 other screen here".
+Open the address it prints in two browser windows, pick **Online** in both, host in one and join from the other. Under "Open games", the status line should read "Connected · 1 other screen here".
 
 ## Addresses
 
