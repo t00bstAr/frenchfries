@@ -39,9 +39,15 @@ const prof = n => JSON.stringify({ mode: 'online', tricks: 2, bestOf: 1, stake: 
   console.log('host code', code);
 
   const B = await open('Mads');
-  await B.waitForSelector(`[data-join="${code}"]`, { timeout: 8000 });
-  console.log('B sees open game:', await B.textContent(`[data-join="${code}"] b`), '| B connected:', await B.getAttribute('#online-note', 'data-state'));
-  await B.click(`[data-join="${code}"]`);
+  // with more than 2 open games (e.g. strangers on the live server) the list becomes a count: join by code then
+  await B.waitForFunction(c => document.querySelector(`[data-join="${c}"]`) || document.querySelector('.games-count'), code, { timeout: 8000 });
+  if (await B.$(`[data-join="${code}"]`)) {
+    console.log('B sees open game:', await B.textContent(`[data-join="${code}"] b`), '| B connected:', await B.getAttribute('#online-note', 'data-state'));
+    await B.click(`[data-join="${code}"]`);
+  } else {
+    console.log('B sees:', (await B.textContent('.games-count b')).trim(), '-> joining by code');
+    await B.fill('#join-code', code); await B.click('#join-btn');
+  }
   await A.waitForFunction(() => document.querySelectorAll('#lobby-seats .seat-row').length === 2, null, { timeout: 8000 });
   await B.waitForFunction(() => document.querySelectorAll('#lobby-seats .seat-row').length === 2, null, { timeout: 8000 });
   console.log('A lobby:', (await A.$$eval('#lobby-seats .seat-row .n', e => e.map(x => x.textContent))).join(', '));

@@ -363,6 +363,9 @@ button.step:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--carto
   font-size: 18px; line-height: 1;
 }
 .rm-spacer { width: 30px; }
+.me-row.can-rm { grid-template-columns: auto 1fr auto auto; }
+.add-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.need-two { margin: 2px 0 0; text-align: center; font-size: 13px; font-weight: 800; color: var(--carton-shade); }
 .add {
   border: 2px dashed var(--line);
   background: none;
@@ -387,7 +390,6 @@ button.step:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--carto
 .text-in::placeholder { color: #9aa7bf; font-weight: 600; }
 .hint { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; font-weight: 600; }
 .mode-hint { margin-top: 8px; text-align: center; }
-.more-games { margin: 2px 0 0; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--muted); }
 
 /* online block */
 .games { display: flex; flex-direction: column; gap: 8px; }
@@ -412,7 +414,19 @@ button.step:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--carto
 .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; animation: pulse 1.6s ease-in-out infinite; transition: background .3s; }
 .live-dot.off { background: var(--line); animation: none; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
-.code-join { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 10px; }
+.code-join { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; margin-top: 6px; }
+.join-label { display: block; margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.games-count b { display: block; font-family: var(--display); font-weight: 400; font-size: 26px; color: var(--ink); line-height: 1.1; }
+.scan-btn { display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; }
+.scan-btn svg { width: 20px; height: 20px; }
+@media (max-width: 380px) { .scan-btn span { display: none; } .scan-btn { padding: 0 12px; } }
+/* QR scanner: full-screen camera with a frame to aim at */
+.scan { position: fixed; inset: 0; z-index: 40; background: #0d1426; display: grid; place-items: center; }
+.scan video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.scan-frame { position: relative; width: min(64vw, 280px); aspect-ratio: 1; border-radius: 24px; box-shadow: 0 0 0 100vmax rgba(13,20,38,.55); outline: 4px solid var(--fry); outline-offset: -2px; }
+.scan-tip { position: absolute; left: 16px; right: 16px; top: max(28px, env(safe-area-inset-top, 0px)); margin: 0; text-align: center; color: #fff; font-weight: 800; font-size: 16px; text-shadow: 0 2px 6px rgba(0,0,0,.5); }
+.scan-cancel { position: absolute; left: 50%; bottom: max(28px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); min-width: 180px; }
+.scan-cancel:active { transform: translate(-50%, 4px); }
 .code-join .text-in { letter-spacing: 4px; font-variant-numeric: tabular-nums; }
 .code-join .text-in::placeholder { letter-spacing: 0; }
 .btn-mid {
@@ -1089,9 +1103,11 @@ window.createFfgRoom = function () {
       <div id="online-block" hidden>
         <span class="field-label"><span class="live-dot"></span>Open games</span>
         <div class="games" id="open-games"></div>
+        <label class="join-label" for="join-code">Type a game code to join</label>
         <div class="code-join">
-          <input class="text-in" id="join-code" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Or type a game code" autocomplete="off" enterkeyhint="go" aria-label="Game code">
+          <input class="text-in" id="join-code" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="Game code" autocomplete="off" enterkeyhint="go">
           <button type="button" class="btn-mid" id="join-btn" disabled>Join</button>
+          <button type="button" class="btn-mid scan-btn" id="scan-btn" aria-label="Scan a QR code"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/><path d="M8 12h8"/></svg><span>Scan</span></button>
         </div>
         <p class="hint" id="online-note"></p>
       </div>
@@ -1187,6 +1203,12 @@ window.createFfgRoom = function () {
 <div id="pass" class="overlay" hidden role="dialog" aria-modal="true" aria-label="Pass the phone"></div>
 <div id="result" class="overlay" hidden role="dialog" aria-modal="true" aria-label="Result"></div>
 <div id="toast" class="toast" hidden role="status"></div>
+<div id="scan" class="scan" hidden role="dialog" aria-modal="true" aria-label="Scan a game QR code">
+  <video id="scan-video" playsinline muted></video>
+  <div class="scan-frame" aria-hidden="true"></div>
+  <p class="scan-tip" id="scan-tip">Point at the QR code on the host’s phone</p>
+  <button type="button" class="btn-big scan-cancel" id="scan-cancel">Cancel</button>
+</div>
 <input type="file" id="cam" accept="image/*" capture="user" hidden>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
@@ -1208,6 +1230,7 @@ window.createFfgRoom = function () {
   const defaults = () => ({
     mode: 'cpu', tricks: 2, bestOf: 3, stake: '', muted: false,
     me: { id: 'me', name: '', photo: null },
+    meIn: true, // pass the phone: is this phone's owner one of the players?
     profileDone: false,
     players: [
       { id: uid(), name: 'Anna', photo: null },
@@ -1227,6 +1250,7 @@ window.createFfgRoom = function () {
   } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} };
   const findPlayer = id => id === 'me' ? store.me : store.players.find(p => p.id === id);
+  const passCount = () => (store.meIn ? 1 : 0) + store.players.length;
 
   // ================= avatars =================
   const CPU_SVG = `<svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" fill="#1c2945"/><rect x="17" y="7" width="14" height="36" rx="2" fill="#f5dc4e"/><rect x="25" y="7" width="6" height="36" fill="#e0c133"/><rect x="17" y="7" width="14" height="3" fill="#fff09a"/><circle cx="21" cy="20" r="2" fill="#1c2945"/><circle cx="27" cy="20" r="2" fill="#1c2945"/><rect x="20" y="26" width="8" height="2" rx="1" fill="#1c2945"/></svg>`;
@@ -1302,6 +1326,7 @@ window.createFfgRoom = function () {
       if (id !== 'game') { $('#result').hidden = true; $('#pass').hidden = true; setDread(0); }
     }
     current = id;
+    if (!$('#scan').hidden) closeScanner();
     $('#fx').classList.toggle('behind', id === 'intro');
     SCREENS.forEach(s => { $('#' + s).hidden = s !== id; });
     syncUrl(id);
@@ -1342,13 +1367,14 @@ window.createFfgRoom = function () {
     let ps;
     if (store.mode === 'cpu') ps = [store.me, { id: 'cpu', name: 'Computer', cpu: true }];
     else if (online) ps = [store.me];
-    else ps = [store.me, ...store.players];
-    const canRemove = store.mode === 'pass' && store.players.length > 1;
+    else ps = [...(store.meIn ? [store.me] : []), ...store.players];
+    const canRemove = store.mode === 'pass'; // anyone can be taken out, you included
     let html = ps.map(p => p.id === 'me' ? `
-      <div class="prow me-row">
+      <div class="prow me-row${canRemove ? ' can-rm' : ''}">
         ${avatar(meInfo())}
         <span class="me-name">${esc(myName())}<small>you</small></span>
         <button type="button" class="edit-btn" data-edit-profile>Edit</button>
+        ${canRemove ? `<button type="button" class="rm" data-rm="me" aria-label="Remove yourself">×</button>` : ''}
       </div>` : `
       <div class="prow">
         <button type="button" class="av-btn" data-photo="${p.id}" ${p.cpu ? 'disabled aria-label="Computer"' : `aria-label="Add a selfie for ${esc(p.name)}"`}>
@@ -1357,8 +1383,13 @@ window.createFfgRoom = function () {
         <input class="name" id="name-${p.id}" data-name="${p.id}" value="${esc(p.name)}" maxlength="14" ${p.cpu ? 'readonly tabindex="-1"' : ''} aria-label="${online ? 'Your name' : 'Player name'}" autocomplete="off" enterkeyhint="done" ${online ? 'placeholder="Your name"' : ''}>
         ${canRemove && !p.cpu ? `<button type="button" class="rm" data-rm="${p.id}" aria-label="Remove ${esc(p.name)}">×</button>` : '<span class="rm-spacer"></span>'}
       </div>`).join('');
-    if (store.mode === 'pass' && store.players.length < 5) html += `<button type="button" class="add" id="add-player">+ Add player</button>`;
+    const tooFew = store.mode === 'pass' && passCount() < 2;
+    if (store.mode === 'pass' && passCount() < 6) html += store.meIn
+      ? `<button type="button" class="add" id="add-player">+ Add player</button>`
+      : `<div class="add-row"><button type="button" class="add" id="add-me">+ Add yourself</button><button type="button" class="add" id="add-player">+ Add other player</button></div>`;
+    if (tooFew) html += `<p class="need-two">Two players are required to start a game.</p>`;
     $('#plist').innerHTML = html;
+    $('#start').disabled = tooFew; // online mode sets its own state below
     $('#players-l').firstChild.textContent = online ? 'Playing as ' : 'Players ';
     $('#players-l .lc').hidden = store.mode !== 'pass';
     $('#online-block').hidden = !online;
@@ -1389,7 +1420,12 @@ window.createFfgRoom = function () {
     const ph = e.target.closest('[data-photo]');
     if (ph && !ph.disabled) { photoFor = ph.dataset.photo; $('#cam').click(); return; }
     const rm = e.target.closest('[data-rm]');
-    if (rm) { store.players = store.players.filter(p => p.id !== rm.dataset.rm); save(); renderSetup(); return; }
+    if (rm) {
+      if (rm.dataset.rm === 'me') store.meIn = false;
+      else store.players = store.players.filter(p => p.id !== rm.dataset.rm);
+      save(); renderSetup(); return;
+    }
+    if (e.target.id === 'add-me') { store.meIn = true; save(); renderSetup(); return; }
     if (e.target.id === 'add-player') {
       const names = ['Sofie', 'Emil', 'Freja', 'Lukas'];
       const used = new Set(store.players.map(p => p.name));
@@ -2163,7 +2199,10 @@ window.createFfgRoom = function () {
     const opts = { tricks: store.tricks, bestOf: store.bestOf, stake: store.stake.trim() };
     let seats;
     if (store.mode === 'cpu') seats = [{ kind: 'human', pid: 'me' }, { kind: 'cpu', pid: 'cpu' }];
-    else seats = [{ kind: 'human', pid: 'me' }, ...store.players.map(p => ({ kind: 'human', pid: p.id }))];
+    else {
+      if (passCount() < 2) return;
+      seats = [...(store.meIn ? [{ kind: 'human', pid: 'me' }] : []), ...store.players.map(p => ({ kind: 'human', pid: p.id }))];
+    }
     store.players.forEach((p, i) => { if (!String(p.name).trim()) p.name = `Player ${i + 1}`; });
     save();
     mode = store.mode;
@@ -2214,25 +2253,88 @@ window.createFfgRoom = function () {
       const noCfg = window.FFG_ROOM_REASON === 'config';
       box.innerHTML = `<p class="empty-games">${roomState === 'pending' ? 'Connecting…' : noCfg ? 'Online play isn’t set up yet.' : 'Can’t reach the game server right now.'}</p>`;
       setNote(roomState === 'pending' ? '' : noCfg ? 'Add your Supabase URL and key at the top of index.html (see README).' : 'Check your connection and reload the page.', roomState === 'pending' ? 'connecting' : 'off');
-      joinBtn.disabled = true; start.disabled = true;
+      joinBtn.disabled = true; start.disabled = true; $('#scan-btn').disabled = true;
       return;
     }
-    start.disabled = false;
+    start.disabled = false; $('#scan-btn').disabled = false;
     joinBtn.disabled = !/^\d{4}$/.test($('#join-code').value);
-    const games = openGames(), MAX_SHOWN = 5;
-    const more = games.length - MAX_SHOWN;
-    box.innerHTML = games.length ? games.slice(0, MAX_SHOWN).map(g => `
+    // a couple of games are listed; beyond that only the count, and you join yours by code or QR
+    const games = openGames();
+    box.innerHTML = games.length > 2
+      ? `<p class="empty-games games-count"><b>${games.length} open games</b>Join yours with its code, or scan the QR on the host’s phone.</p>`
+      : games.length ? games.map(g => `
       <button type="button" class="game-row" data-join="${g.code}">
         ${avatar({ id: g.id, name: g.name })}
         <span><b>${esc(g.name)}'s game</b><small>${g.count} ${g.count === 1 ? 'player' : 'players'} · code ${g.code}</small></span>
         <span class="go">Join</span>
-      </button>`).join('') + (more > 0 ? `<p class="more-games">+${more} more open ${more === 1 ? 'game' : 'games'}. Ask your host for the code.</p>` : '')
+      </button>`).join('')
       : '<p class="empty-games">No open games right now.<br>Host one, or wait for a friend to host.</p>';
     setNote(roomConn ? '' : 'Connecting to the game room…', roomConn ? 'connected' : 'connecting');
   }
   $('#open-games').addEventListener('click', e => { const b = e.target.closest('[data-join]'); if (b) joinGame(b.dataset.join); });
   $('#join-code').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4); $('#join-btn').disabled = roomState !== 'ready' || e.target.value.length !== 4; });
   $('#join-btn').addEventListener('click', () => joinGame($('#join-code').value));
+
+  // ---- QR scanner: the phone's camera reads a host's /join/1234 code ----
+  let scanStream = null, scanT = 0, jsQRP = null;
+  const codeFromText = t => { const m = String(t || '').trim().match(/(?:\/(?:join|game)\/(\d{4})(?:[/?#]|$))|^(\d{4})$/); return m ? (m[1] || m[2]) : null; };
+  async function makeDetector() {
+    try {
+      if ('BarcodeDetector' in window && (await BarcodeDetector.getSupportedFormats()).includes('qr_code')) {
+        const d = new BarcodeDetector({ formats: ['qr_code'] });
+        return async v => ((await d.detect(v))[0] || {}).rawValue;
+      }
+    } catch (e) {}
+    // Safari has no built-in QR reader: load a small one the first time it's needed
+    jsQRP = jsQRP || new Promise((res, rej) => {
+      const sc = document.createElement('script');
+      sc.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+      sc.onload = () => res(window.jsQR); sc.onerror = () => { jsQRP = null; rej(new Error('jsqr')); };
+      document.head.appendChild(sc);
+    });
+    const jsQR = await jsQRP, cv2 = document.createElement('canvas'), g = cv2.getContext('2d', { willReadFrequently: true });
+    return async v => {
+      const k = Math.min(1, 640 / Math.max(v.videoWidth, v.videoHeight));
+      cv2.width = Math.round(v.videoWidth * k); cv2.height = Math.round(v.videoHeight * k);
+      g.drawImage(v, 0, 0, cv2.width, cv2.height);
+      const r = jsQR(g.getImageData(0, 0, cv2.width, cv2.height).data, cv2.width, cv2.height, { inversionAttempts: 'dontInvert' });
+      return r && r.data;
+    };
+  }
+  function closeScanner() {
+    clearTimeout(scanT); scanT = 0;
+    if (scanStream) scanStream.getTracks().forEach(t => t.stop());
+    scanStream = null;
+    $('#scan-video').srcObject = null;
+    $('#scan').hidden = true;
+  }
+  async function openScanner() {
+    ensureAudio();
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast('This browser can’t use the camera. Type the code instead.'); return; }
+    if (needName()) return;
+    $('#scan-tip').textContent = 'Point at the QR code on the host’s phone';
+    $('#scan').hidden = false;
+    try { scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }); }
+    catch (e) { closeScanner(); toast(e && e.name === 'NotAllowedError' ? 'Camera access is blocked. Allow it in your browser settings, or type the code.' : 'Couldn’t open the camera. Type the code instead.'); return; }
+    if ($('#scan').hidden) { closeScanner(); return; } // cancelled while asking for permission
+    const v = $('#scan-video'); v.srcObject = scanStream;
+    try { await v.play(); } catch (e) {}
+    let detect;
+    try { detect = await makeDetector(); } catch (e) { closeScanner(); toast('Couldn’t start the scanner. Type the code instead.'); return; }
+    const tick = async () => {
+      if (!scanStream) return;
+      let text = null;
+      try { if (v.readyState >= 2) text = await detect(v); } catch (e) {}
+      if (!scanStream) return;
+      const code = codeFromText(text);
+      if (code) { sPop(); buzz(30); closeScanner(); joinGame(code); return; }
+      if (text) $('#scan-tip').textContent = 'That’s not a game code. Scan the QR in the host’s lobby.';
+      scanT = setTimeout(tick, 180);
+    };
+    tick();
+  }
+  $('#scan-btn').addEventListener('click', openScanner);
+  $('#scan-cancel').addEventListener('click', closeScanner);
 
   function needName() {
     if (store.profileDone && String(store.me.name || '').trim()) return false;
